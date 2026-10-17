@@ -8,6 +8,7 @@ import org.lwjgl.input.Keyboard;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 
 public class GuiPaintingEditor extends GuiScreen {
     private final EnumHand hand;
@@ -17,7 +18,8 @@ public class GuiPaintingEditor extends GuiScreen {
     private GuiTextField path;
     private GuiTextField widthBlocks;
     private GuiTextField heightBlocks;
-    private String status = "Enter a PNG or JPG path and click Upload.";
+    private String status = "Paste a public HTTPS PNG/JPG URL or local image path.";
+    private boolean uploading;
     private int left;
     private int top;
 
@@ -40,8 +42,8 @@ public class GuiPaintingEditor extends GuiScreen {
         left = this.width / 2 - 140;
         top = this.height / 2 - 100;
         path = new GuiTextField(0, fontRenderer, left, top + 52, 280, 20);
-        path.setMaxStringLength(512);
-        path.setText("config/immersive_paintings/example.png");
+        path.setMaxStringLength(2048);
+        path.setText("");
         widthBlocks = new GuiTextField(1, fontRenderer, left, top + 98, 65, 20);
         widthBlocks.setText(Integer.toString(initialWidth));
         widthBlocks.setMaxStringLength(1);
@@ -65,7 +67,7 @@ public class GuiPaintingEditor extends GuiScreen {
             mc.displayGuiScreen(null);
             return;
         }
-        if (button.id != 0) return;
+        if (button.id != 0 || uploading) return;
         try {
             int w = Integer.parseInt(widthBlocks.getText());
             int h = Integer.parseInt(heightBlocks.getText());
@@ -73,11 +75,54 @@ public class GuiPaintingEditor extends GuiScreen {
                 status = "Width and height must be 1, 2, 3 or 4.";
                 return;
             }
-            File image = new File(path.getText().trim());
-            if (!image.isAbsolute()) image = new File(mc.mcDataDir, path.getText().trim());
-            byte[] png = ImageOps.readLocal(image);
-            ImmersivePaintings.NETWORK.sendToServer(new MessageUpload(hand, entityId, w, h, png));
-            status = "Sent image (" + (png.length / 1024) + " KiB). Check chat for confirmation.";
+            final String imageSource = path.getText().trim();
+            if (imageSource.isEmpty()) {
+                status = "Paste an HTTPS image URL or enter a local PNG/JPG path.";
+                return;
+            }
+            final String sourceLower = imageSource.toLowerCase(Locale.ROOT);
+            if (sourceLower.contains("://") && !sourceLower.startsWith("https://")) {
+                status = "Only public HTTPS URLs are supported; use https://";
+                return;
+            }
+            uploading = true;
+            button.enabled = false;
+            status = sourceLower.startsWith("https://") ? "Downloading image..." : "Reading image...";
+            final File gameDirectory = mc.mcDataDir;
+
+            // Read/download/resize off the render thread so Minecraft doesn't freeze.
+            Thread worker = new Thread(() -> {
+                try {
+                    byte[] png;
+                    if (sourceLower.startsWith("https://")) {
+                        png = ImageOps.readRemote(imageSource);
+                    } else {
+                        File image = new File(imageSource);
+                        if (!image.isAbsolute()) image = new File(gameDirectory, imageSource);
+                        png = ImageOps.readLocal(image);
+                    }
+                    mc.addScheduledTask(() -> {
+                        if (mc.currentScreen != this) return;
+                        ImmersivePaintings.NETWORK.sendToServer(
+                            new MessageUpload(hand, entityId, w, h, png));
+                        uploading = false;
+                        button.enabled = true;
+                        status = "Sent " + (png.length / 1024) +
+                                 " KiB. Check chat for server confirmation.";
+                    });
+                } catch (IOException | RuntimeException error) {
+                    final String message = error.getMessage() != null
+                        ? error.getMessage() : "Unable to open image.";
+                    mc.addScheduledTask(() -> {
+                        if (mc.currentScreen != this) return;
+                        uploading = false;
+                        button.enabled = true;
+                        status = message;
+                    });
+                }
+            }, "ImmersivePaintings-ImageLoader");
+            worker.setDaemon(true);
+            worker.start();
         } catch (NumberFormatException e) {
             status = "Enter width and height as numbers from 1 to 4.";
         } catch (IOException e) {
@@ -126,7 +171,7 @@ public class GuiPaintingEditor extends GuiScreen {
         drawDefaultBackground();
         drawCenteredString(fontRenderer, entityId < 0 ? "Import painting image" : "Edit placed painting",
                            this.width / 2, top + 12, 0xFFFFFF);
-        fontRenderer.drawString("Local PNG/JPG path (absolute or relative to .minecraft):",
+        fontRenderer.drawString("Public HTTPS PNG/JPG URL or local file path:",
                                 left, top + 38, 0xDDDDDD);
         fontRenderer.drawString("Width (blocks):", left, top + 84, 0xDDDDDD);
         fontRenderer.drawString("Height (blocks):", left + 100, top + 84, 0xDDDDDD);

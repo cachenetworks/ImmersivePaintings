@@ -8,12 +8,12 @@ Original mod by [Luke100000](https://github.com/Luke100000/ImmersivePaintings), 
 
 - Craft an **Immersive Painting** using a vanilla painting and paper.
 - Right-click the item **in the air**, or **right-click an already-placed painting**, to open the editor.
-- Enter a local PNG/JPEG path, and choose width and height (1–4 blocks each).
+- Enter a **public HTTPS URL to a PNG/JPEG image** (for example `https://example.com/picture.png`) or a local PNG/JPEG file path, and choose width and height (1–4 blocks each).
 - Click **Upload to held painting**, or **Update painting on wall** when editing a placed painting. The server validates uploads, checks interaction distance and build permissions for placed paintings, then syncs changes to nearby clients.
 - Place the configured item on a vertical wall; other modded clients see the painting through entity spawn data, and it saves with the world.
 - Breaking a painting drops its configured item, except in creative mode.
 
-Paths may be absolute, or relative to the Minecraft game directory.
+Local paths may be absolute, or relative to the Minecraft game directory. Remote images are downloaded **on the client**, resized locally and sent to the server through the existing upload packet. Only HTTPS links are accepted, up to 3 HTTPS redirects and 8 MiB downloaded. Server image uploads remain capped at 384 KiB after conversion. URLs must return actual PNG/JPEG image data, not HTML image-preview pages. Image hosts can see your client IP address when downloading.
 
 ## Requirements
 
