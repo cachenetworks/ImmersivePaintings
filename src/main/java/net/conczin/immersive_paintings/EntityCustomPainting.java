@@ -104,7 +104,7 @@ public class EntityCustomPainting extends EntityHanging implements IEntityAdditi
     @Override
     public void readSpawnData(ByteBuf buf) {
         hangingPosition = new BlockPos(buf.readInt(), buf.readInt(), buf.readInt());
-        EnumFacing facing = EnumFacing.byIndex(buf.readUnsignedByte());
+        EnumFacing facing = EnumFacing.getFront(buf.readUnsignedByte());
         blocksWide = clamp(buf.readUnsignedByte());
         blocksTall = clamp(buf.readUnsignedByte());
         int length = buf.readInt();
