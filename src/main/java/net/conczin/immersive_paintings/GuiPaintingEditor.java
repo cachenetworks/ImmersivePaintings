@@ -125,8 +125,6 @@ public class GuiPaintingEditor extends GuiScreen {
             worker.start();
         } catch (NumberFormatException e) {
             status = "Enter width and height as numbers from 1 to 4.";
-        } catch (IOException e) {
-            status = e.getMessage() == null ? "Could not open image." : e.getMessage();
         }
     }
 
