@@ -1,0 +1,5 @@
+{
+  "type":"minecraft:crafting_shapeless",
+  "ingredients":[{"item":"minecraft:painting"},{"item":"minecraft:paper"}],
+  "result":{"item":"immersive_paintings:immersive_painting"}
+}

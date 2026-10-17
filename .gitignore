@@ -1,47 +1,8 @@
-# eclipse
-bin
-*.launch
-.settings
-.metadata
-.classpath
-.project
-
-# idea
-out
-*.ipr
-*.iws
+/.gradle/
+/build/
+/run/
+/out/
+/.idea/
 *.iml
-.idea
-
-# gradle
-build
-.gradle
-
-# other
-eclipse
-run
-backup
-
-# Files from Forge MDK
-forge*changelog.txt
-/src/main/original-java
-/mapppings
-/mcmodsrepo
-/local.properties
-
-# Files from architectury
-.architectury-transformer
-/logs
-/.vscode
-/curseforge
-
-*.kra
-*.kra~
-*.png~
-*.blend
-*.blend1
-*.mtl
-/models/custom_model.java
-/models/custom_model_yarn.java
-/scripts/textures/
-/paintings/
+*.class
+*.log
