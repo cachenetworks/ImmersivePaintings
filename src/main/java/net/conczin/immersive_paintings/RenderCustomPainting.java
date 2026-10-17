@@ -74,24 +74,25 @@ public class RenderCustomPainting extends Render<EntityCustomPainting> {
         GlStateManager.disableLighting();
 
         // Flat brown border behind the painting surface.
+        // Painting front faces local -Z in the hanging entity's coordinate system.
         GlStateManager.disableTexture2D();
         Tessellator t = Tessellator.getInstance();
         BufferBuilder b = t.getBuffer();
         float left = -w / 2.0F - 0.035F, right = w / 2.0F + 0.035F;
         float top = h / 2.0F + 0.035F, bottom = -h / 2.0F - 0.035F;
         b.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
-        b.pos(left, bottom, 0.01).color(82, 51, 28, 255).endVertex();
-        b.pos(right, bottom, 0.01).color(82, 51, 28, 255).endVertex();
-        b.pos(right, top, 0.01).color(82, 51, 28, 255).endVertex();
-        b.pos(left, top, 0.01).color(82, 51, 28, 255).endVertex();
+        b.pos(left, bottom, -0.01).color(82, 51, 28, 255).endVertex();
+        b.pos(right, bottom, -0.01).color(82, 51, 28, 255).endVertex();
+        b.pos(right, top, -0.01).color(82, 51, 28, 255).endVertex();
+        b.pos(left, top, -0.01).color(82, 51, 28, 255).endVertex();
         t.draw();
 
         // Fallback matte for an unconfigured item.
         b.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
-        b.pos(-w/2, -h/2, 0.02).color(216, 209, 181, 255).endVertex();
-        b.pos(w/2, -h/2, 0.02).color(216, 209, 181, 255).endVertex();
-        b.pos(w/2, h/2, 0.02).color(216, 209, 181, 255).endVertex();
-        b.pos(-w/2, h/2, 0.02).color(216, 209, 181, 255).endVertex();
+        b.pos(-w/2, -h/2, -0.02).color(216, 209, 181, 255).endVertex();
+        b.pos(w/2, -h/2, -0.02).color(216, 209, 181, 255).endVertex();
+        b.pos(w/2, h/2, -0.02).color(216, 209, 181, 255).endVertex();
+        b.pos(-w/2, h/2, -0.02).color(216, 209, 181, 255).endVertex();
         t.draw();
 
         // Header and dimensions are checked when the texture is first registered;
@@ -102,10 +103,10 @@ public class RenderCustomPainting extends Render<EntityCustomPainting> {
             bindTexture(image);
             GlStateManager.color(1F, 1F, 1F, 1F);
             b.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-            b.pos(-w/2, -h/2, 0.03).tex(0, 1).endVertex();
-            b.pos(w/2, -h/2, 0.03).tex(1, 1).endVertex();
-            b.pos(w/2, h/2, 0.03).tex(1, 0).endVertex();
-            b.pos(-w/2, h/2, 0.03).tex(0, 0).endVertex();
+            b.pos(-w/2, -h/2, -0.03).tex(0, 1).endVertex();
+            b.pos(w/2, -h/2, -0.03).tex(1, 1).endVertex();
+            b.pos(w/2, h/2, -0.03).tex(1, 0).endVertex();
+            b.pos(-w/2, h/2, -0.03).tex(0, 0).endVertex();
             t.draw();
         }
         GlStateManager.enableTexture2D();
