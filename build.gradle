@@ -3,19 +3,33 @@ buildscript {
         maven { url = 'https://maven.minecraftforge.net' }
         mavenCentral()
     }
-    dependencies { classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT' }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
+    }
 }
-apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'eclipse'
 
-version = '1.12.2-0.1.0-alpha'
+version = '0.1.0-alpha'
 group = 'net.conczin'
 archivesBaseName = 'immersive_paintings'
-sourceCompatibility = targetCompatibility = '1.8'
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
 
 minecraft {
-    version = '1.12.2-14.23.5.2860'
-    runDir = 'run'
-    mappings = 'stable_39'
-    makeObfSourceJar = false
+    mappings channel: 'snapshot', version: '20171003-1.12'
+    runs {
+        client {
+            workingDirectory project.file('run')
+        }
+        server {
+            workingDirectory project.file('run')
+        }
+    }
 }
-repositories { mavenCentral() }
+repositories {
+    mavenCentral()
+}
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2860'
+}
+jar.finalizedBy('reobfJar')
