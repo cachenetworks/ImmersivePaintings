@@ -37,6 +37,7 @@ public class ImmersivePaintings {
         EntityRegistry.registerModEntity(new ResourceLocation(MODID, "painting"),
             EntityCustomPainting.class, "immersive_painting", 0, this, 160, 20, false);
         NETWORK.registerMessage(MessageUpload.Handler.class, MessageUpload.class, 0, Side.SERVER);
+        NETWORK.registerMessage(MessagePaintingSync.Handler.class, MessagePaintingSync.class, 1, Side.CLIENT);
         PROXY.preInit();
     }
 

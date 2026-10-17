@@ -7,9 +7,9 @@ Original mod by [Luke100000](https://github.com/Luke100000/ImmersivePaintings), 
 ## Features
 
 - Craft an **Immersive Painting** using a vanilla painting and paper.
-- Right-click the item **in the air** to open the editor.
+- Right-click the item **in the air**, or **right-click an already-placed painting**, to open the editor.
 - Enter a local PNG/JPEG path, and choose width and height (1–4 blocks each).
-- Click **Upload to held painting**. The client resizes the image and sends it to the server; the server validates it and saves it in the held item's NBT.
+- Click **Upload to held painting**, or **Update painting on wall** when editing a placed painting. The server validates uploads, checks interaction distance and build permissions for placed paintings, then syncs changes to nearby clients.
 - Place the configured item on a vertical wall; other modded clients see the painting through entity spawn data, and it saves with the world.
 - Breaking a painting drops its configured item, except in creative mode.
 
@@ -29,6 +29,6 @@ The reobfuscated JAR should appear under build/libs. See GitHub Actions for an a
 
 ## Known limitations
 
-**Alpha / unverified in-game.** This is not a complete or data-compatible port. Image galleries, frames, glow variants, graffiti, GIFs, datapack imports, in-world editing and migration of painting data from other MC versions are not implemented. Image blobs are stored per painting/item in NBT (not deduplicated); back up worlds before testing. A file picker is not included.
+**Alpha / unverified in-game.** This is not a complete or data-compatible port. Image galleries, frames, glow variants, graffiti, GIFs, datapack imports, migration of painting data from other MC versions are not implemented. Image blobs are stored per painting/item in NBT (not deduplicated); back up worlds before testing. A file picker is not included.
 
 Original assets and copyright remain with their authors. GPL-3.0-only; see LICENSE.

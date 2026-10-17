@@ -21,7 +21,16 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 public class RenderCustomPainting extends Render<EntityCustomPainting> {
-    private final Map<EntityCustomPainting, ResourceLocation> textures = new WeakHashMap<>();
+    private final Map<EntityCustomPainting, CachedTexture> textures = new WeakHashMap<>();
+
+    private static final class CachedTexture {
+        final byte[] imageData;
+        final ResourceLocation texture;
+        CachedTexture(byte[] imageData, ResourceLocation texture) {
+            this.imageData = imageData;
+            this.texture = texture;
+        }
+    }
 
     protected RenderCustomPainting(RenderManager manager) {
         super(manager);
@@ -31,15 +40,22 @@ public class RenderCustomPainting extends Render<EntityCustomPainting> {
     @Nullable
     @Override
     protected ResourceLocation getEntityTexture(EntityCustomPainting entity) {
-        ResourceLocation current = textures.get(entity);
-        if (current != null) return current;
-        if (!ImageOps.isValid(entity.getPng())) return TextureMap.LOCATION_BLOCKS_TEXTURE;
+        CachedTexture previous = textures.get(entity);
+        byte[] imageData = entity.getPng();
+        if (previous != null && previous.imageData == imageData) {
+            return previous.texture;
+        }
+        if (previous != null) {
+            Minecraft.getMinecraft().getTextureManager().deleteTexture(previous.texture);
+            textures.remove(entity);
+        }
+        if (!ImageOps.isValid(imageData)) return TextureMap.LOCATION_BLOCKS_TEXTURE;
         try {
-            BufferedImage image = ImageIO.read(new ByteArrayInputStream(entity.getPng()));
+            BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageData));
             if (image == null) return TextureMap.LOCATION_BLOCKS_TEXTURE;
-            current = Minecraft.getMinecraft().getTextureManager().getDynamicTextureLocation(
-                "immersive_paintings", new DynamicTexture(image));
-            textures.put(entity, current);
+            ResourceLocation current = Minecraft.getMinecraft().getTextureManager()
+                .getDynamicTextureLocation("immersive_paintings", new DynamicTexture(image));
+            textures.put(entity, new CachedTexture(imageData, current));
             return current;
         } catch (IOException e) {
             return TextureMap.LOCATION_BLOCKS_TEXTURE;

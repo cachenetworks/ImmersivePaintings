@@ -11,15 +11,28 @@ import java.io.IOException;
 
 public class GuiPaintingEditor extends GuiScreen {
     private final EnumHand hand;
+    private final int entityId;
+    private final int initialWidth;
+    private final int initialHeight;
     private GuiTextField path;
     private GuiTextField widthBlocks;
     private GuiTextField heightBlocks;
-    private String status = "Select a local PNG or JPG to upload.";
+    private String status = "Enter a PNG or JPG path and click Upload.";
     private int left;
     private int top;
 
     public GuiPaintingEditor(EnumHand hand) {
         this.hand = hand;
+        this.entityId = -1;
+        this.initialWidth = 1;
+        this.initialHeight = 1;
+    }
+
+    public GuiPaintingEditor(int entityId, int initialWidth, int initialHeight) {
+        this.hand = EnumHand.MAIN_HAND;
+        this.entityId = entityId;
+        this.initialWidth = initialWidth;
+        this.initialHeight = initialHeight;
     }
 
     @Override
@@ -30,13 +43,13 @@ public class GuiPaintingEditor extends GuiScreen {
         path.setMaxStringLength(512);
         path.setText("config/immersive_paintings/example.png");
         widthBlocks = new GuiTextField(1, fontRenderer, left, top + 98, 65, 20);
-        widthBlocks.setText("1");
+        widthBlocks.setText(Integer.toString(initialWidth));
         widthBlocks.setMaxStringLength(1);
         heightBlocks = new GuiTextField(2, fontRenderer, left + 100, top + 98, 65, 20);
-        heightBlocks.setText("1");
+        heightBlocks.setText(Integer.toString(initialHeight));
         heightBlocks.setMaxStringLength(1);
         path.setFocused(true);
-        buttonList.add(new GuiButton(0, left, top + 130, 198, 20, "Upload to held painting"));
+        buttonList.add(new GuiButton(0, left, top + 130, 198, 20, entityId < 0 ? "Upload to held painting" : "Update painting on wall"));
         buttonList.add(new GuiButton(1, left + 205, top + 130, 75, 20, "Close"));
         Keyboard.enableRepeatEvents(true);
     }
@@ -63,7 +76,7 @@ public class GuiPaintingEditor extends GuiScreen {
             File image = new File(path.getText().trim());
             if (!image.isAbsolute()) image = new File(mc.mcDataDir, path.getText().trim());
             byte[] png = ImageOps.readLocal(image);
-            ImmersivePaintings.NETWORK.sendToServer(new MessageUpload(hand, w, h, png));
+            ImmersivePaintings.NETWORK.sendToServer(new MessageUpload(hand, entityId, w, h, png));
             status = "Sent image (" + (png.length / 1024) + " KiB). Check chat for confirmation.";
         } catch (NumberFormatException e) {
             status = "Enter width and height as numbers from 1 to 4.";
@@ -111,7 +124,7 @@ public class GuiPaintingEditor extends GuiScreen {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         drawDefaultBackground();
-        drawCenteredString(fontRenderer, "Immersive Paintings — Import Image",
+        drawCenteredString(fontRenderer, entityId < 0 ? "Import painting image" : "Edit placed painting",
                            this.width / 2, top + 12, 0xFFFFFF);
         fontRenderer.drawString("Local PNG/JPG path (absolute or relative to .minecraft):",
                                 left, top + 38, 0xDDDDDD);

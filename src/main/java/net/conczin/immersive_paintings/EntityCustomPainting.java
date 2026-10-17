@@ -8,6 +8,7 @@ import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
@@ -26,6 +27,45 @@ public class EntityCustomPainting extends EntityHanging implements IEntityAdditi
     public EntityCustomPainting(World world, BlockPos position, EnumFacing facing) {
         super(world, position);
         updateFacingWithBoundingBox(facing);
+    }
+
+    @Override
+    public boolean processInitialInteract(EntityPlayer player, EnumHand hand) {
+        // Open the editor when clicking a placed painting, even with an empty hand.
+        if (world.isRemote) {
+            ImmersivePaintings.PROXY.openEntityEditor(this);
+        }
+        return true;
+    }
+
+    /**
+     * Called on the server after permission and image validation.
+     * Rejects dimensions that would no longer fit on the supporting wall.
+     */
+    public boolean applyPainting(int width, int height, byte[] image) {
+        int oldWidth = blocksWide;
+        int oldHeight = blocksTall;
+        byte[] oldPng = png;
+        blocksWide = clamp(width);
+        blocksTall = clamp(height);
+        png = image.clone();
+        if (facingDirection != null) updateFacingWithBoundingBox(facingDirection);
+        if (!onValidSurface()) {
+            blocksWide = oldWidth;
+            blocksTall = oldHeight;
+            png = oldPng;
+            if (facingDirection != null) updateFacingWithBoundingBox(facingDirection);
+            return false;
+        }
+        return true;
+    }
+
+    /** Client-side state update after a server broadcast. */
+    public void receivePainting(int width, int height, byte[] image) {
+        blocksWide = clamp(width);
+        blocksTall = clamp(height);
+        png = image.clone();
+        if (facingDirection != null) updateFacingWithBoundingBox(facingDirection);
     }
 
     public int getBlocksWide() { return blocksWide; }

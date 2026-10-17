@@ -1,7 +1,9 @@
 package net.conczin.immersive_paintings;
 
 import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
@@ -12,14 +14,16 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class MessageUpload implements IMessage {
     private EnumHand hand = EnumHand.MAIN_HAND;
+    private int entityId = -1;
     private int width;
     private int height;
     private byte[] image = new byte[0];
 
     public MessageUpload() {}
 
-    public MessageUpload(EnumHand hand, int width, int height, byte[] image) {
+    public MessageUpload(EnumHand hand, int entityId, int width, int height, byte[] image) {
         this.hand = hand;
+        this.entityId = entityId;
         this.width = width;
         this.height = height;
         this.image = image;
@@ -28,6 +32,7 @@ public class MessageUpload implements IMessage {
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeByte(hand == EnumHand.MAIN_HAND ? 0 : 1);
+        buf.writeInt(entityId);
         buf.writeByte(width);
         buf.writeByte(height);
         buf.writeInt(image.length);
@@ -38,6 +43,7 @@ public class MessageUpload implements IMessage {
     public void fromBytes(ByteBuf buf) {
         int which = buf.readUnsignedByte();
         hand = which == 1 ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND;
+        entityId = buf.readInt();
         width = buf.readUnsignedByte();
         height = buf.readUnsignedByte();
         int size = buf.readInt();
@@ -53,12 +59,39 @@ public class MessageUpload implements IMessage {
         public IMessage onMessage(final MessageUpload message, final MessageContext ctx) {
             final EntityPlayerMP sender = ctx.getServerHandler().player;
             sender.getServerWorld().addScheduledTask(() -> {
-                ItemStack stack = sender.getHeldItem(message.hand);
-                if (stack.isEmpty() || stack.getItem() != ImmersivePaintings.PAINTING_ITEM) return;
                 if (message.width < 1 || message.width > 4 ||
                     message.height < 1 || message.height > 4 ||
                     !ImageOps.isValid(message.image)) {
                     sender.sendMessage(new TextComponentString("Invalid painting image or dimensions."));
+                    return;
+                }
+
+                if (message.entityId >= 0) {
+                    Entity entity = sender.world.getEntityByID(message.entityId);
+                    if (!(entity instanceof EntityCustomPainting) ||
+                        sender.getDistanceSq(entity) > 64.0D) {
+                        sender.sendMessage(new TextComponentString("Move closer to the painting."));
+                        return;
+                    }
+                    EntityCustomPainting painting = (EntityCustomPainting) entity;
+                    if (!sender.world.isBlockModifiable(sender, painting.getHangingPosition()) ||
+                        !sender.canPlayerEdit(painting.getHangingPosition(), EnumFacing.UP, ItemStack.EMPTY)) {
+                        sender.sendMessage(new TextComponentString("You cannot edit this painting here."));
+                        return;
+                    }
+                    if (!painting.applyPainting(message.width, message.height, message.image)) {
+                        sender.sendMessage(new TextComponentString("Not enough wall space for those dimensions."));
+                        return;
+                    }
+                    sender.world.getChunkFromBlockCoords(painting.getHangingPosition()).markDirty();
+                    ImmersivePaintings.NETWORK.sendToAllTracking(new MessagePaintingSync(painting), painting);
+                    sender.sendMessage(new TextComponentString("Painting updated on wall."));
+                    return;
+                }
+
+                ItemStack stack = sender.getHeldItem(message.hand);
+                if (stack.isEmpty() || stack.getItem() != ImmersivePaintings.PAINTING_ITEM) {
+                    sender.sendMessage(new TextComponentString("Hold an Immersive Painting item to edit it."));
                     return;
                 }
                 NBTTagCompound tag = stack.hasTagCompound()
