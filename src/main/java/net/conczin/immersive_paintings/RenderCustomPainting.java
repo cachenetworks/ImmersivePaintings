@@ -78,7 +78,9 @@ public class RenderCustomPainting extends Render<EntityCustomPainting> {
         b.pos(-w/2, h/2, 0.02).color(216, 209, 181, 255).endVertex();
         t.draw();
 
-        if (ImageOps.isValid(entity.getPng())) {
+        // Header and dimensions are checked when the texture is first registered;
+        // avoid repeatedly constructing an ImageReader on every render frame.
+        if (entity.getPng().length > 0) {
             ResourceLocation image = getEntityTexture(entity);
             GlStateManager.enableTexture2D();
             bindTexture(image);
