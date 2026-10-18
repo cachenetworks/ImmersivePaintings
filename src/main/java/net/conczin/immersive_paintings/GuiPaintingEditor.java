@@ -103,8 +103,7 @@ public class GuiPaintingEditor extends GuiScreen {
                     }
                     mc.addScheduledTask(() -> {
                         if (mc.currentScreen != this) return;
-                        ImmersivePaintings.NETWORK.sendToServer(
-                            new MessageUpload(hand, entityId, w, h, png));
+                        MessageUpload.sendImage(hand, entityId, w, h, png);
                         uploading = false;
                         button.enabled = true;
                         status = "Sent " + (png.length / 1024) +

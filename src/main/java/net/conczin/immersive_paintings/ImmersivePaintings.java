@@ -14,7 +14,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
 
 @Mod(modid = ImmersivePaintings.MODID, name = "Immersive Paintings 1.12.2",
-     version = "0.1.0-alpha", acceptedMinecraftVersions = "[1.12.2]",
+     version = "0.1.1-alpha", acceptedMinecraftVersions = "[1.12.2]",
      dependencies = "required-after:forge@[14.23.5.2859,)")
 @Mod.EventBusSubscriber(modid = ImmersivePaintings.MODID)
 public class ImmersivePaintings {

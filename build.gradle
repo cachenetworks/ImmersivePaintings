@@ -10,7 +10,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 
-version = '0.1.0-alpha'
+version = '0.1.1-alpha'
 group = 'net.conczin'
 archivesBaseName = 'immersive_paintings'
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'

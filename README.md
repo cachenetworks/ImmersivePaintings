@@ -9,7 +9,7 @@ Original mod by [Luke100000](https://github.com/Luke100000/ImmersivePaintings), 
 - Craft an **Immersive Painting** using a vanilla painting and paper.
 - Right-click the item **in the air**, or **right-click an already-placed painting**, to open the editor.
 - Enter a **public HTTPS URL to a PNG/JPEG image** (for example `https://example.com/picture.png`) or a local PNG/JPEG file path, and choose width and height (1–4 blocks each).
-- Click **Upload to held painting**, or **Update painting on wall** when editing a placed painting. The server validates uploads, checks interaction distance and build permissions for placed paintings, then syncs changes to nearby clients.
+- Click **Upload to held painting**, or **Update painting on wall** when editing a placed painting. All image transfers are now **chunked to 12 KiB per Forge custom packet**, avoiding the 32,767-byte 1.12.2 custom-payload limit. The server validates uploads, checks interaction distance and build permissions for placed paintings, then syncs changes to nearby clients.
 - Place the configured item on a vertical wall; other modded clients see the painting through entity spawn data, and it saves with the world.
 - Breaking a painting drops its configured item, except in creative mode.
 
@@ -19,7 +19,7 @@ Local paths may be absolute, or relative to the Minecraft game directory. Remote
 
 - Minecraft **1.12.2**, Forge **14.23.5.2860**, **Java 8**.
 - Both client and server need this mod in multiplayer.
-- Image upload cap: 384 KiB after processing, max 512×512 pixels; each painting is up to 4×4 blocks.
+- Image upload cap: 384 KiB after processing, max 512×512 pixels; each painting is up to 4×4 blocks. Image bytes are transferred in 12 KiB packets (uploads, updates, and initial entity tracking); the spawn packet contains only painting geometry.
 
 ## Building
 

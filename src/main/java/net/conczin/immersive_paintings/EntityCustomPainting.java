@@ -137,8 +137,7 @@ public class EntityCustomPainting extends EntityHanging implements IEntityAdditi
         buf.writeByte(facingDirection == null ? EnumFacing.NORTH.getIndex() : facingDirection.getIndex());
         buf.writeByte(blocksWide);
         buf.writeByte(blocksTall);
-        buf.writeInt(png.length);
-        buf.writeBytes(png);
+        // The image is sent separately in bounded Forge channel chunks.
     }
 
     @Override
@@ -147,12 +146,7 @@ public class EntityCustomPainting extends EntityHanging implements IEntityAdditi
         EnumFacing facing = EnumFacing.getFront(buf.readUnsignedByte());
         blocksWide = clamp(buf.readUnsignedByte());
         blocksTall = clamp(buf.readUnsignedByte());
-        int length = buf.readInt();
-        if (length < 0 || length > ImageOps.MAX_BYTES || length > buf.readableBytes()) {
-            throw new IllegalArgumentException("Invalid painting payload");
-        }
-        png = new byte[length];
-        buf.readBytes(png);
+        png = new byte[0]; // Populated by MessagePaintingSync tracking packets.
         updateFacingWithBoundingBox(facing.getAxis().isHorizontal() ? facing : EnumFacing.NORTH);
     }
 }
