@@ -95,6 +95,8 @@ public class RenderCustomPainting extends Render<EntityCustomPainting> {
         b.pos(-w/2, h/2, -0.02).color(216, 209, 181, 255).endVertex();
         t.draw();
 
+        // Local painting X is reversed when EntityHanging rotates it toward the wall's outward face.
+        // Reverse the U coordinates (not V) so signs/text read correctly from the front.
         // Header and dimensions are checked when the texture is first registered;
         // avoid repeatedly constructing an ImageReader on every render frame.
         if (entity.getPng().length > 0) {
@@ -103,10 +105,10 @@ public class RenderCustomPainting extends Render<EntityCustomPainting> {
             bindTexture(image);
             GlStateManager.color(1F, 1F, 1F, 1F);
             b.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-            b.pos(-w/2, -h/2, -0.03).tex(0, 1).endVertex();
-            b.pos(w/2, -h/2, -0.03).tex(1, 1).endVertex();
-            b.pos(w/2, h/2, -0.03).tex(1, 0).endVertex();
-            b.pos(-w/2, h/2, -0.03).tex(0, 0).endVertex();
+            b.pos(-w/2, -h/2, -0.03).tex(1, 1).endVertex();
+            b.pos(w/2, -h/2, -0.03).tex(0, 1).endVertex();
+            b.pos(w/2, h/2, -0.03).tex(0, 0).endVertex();
+            b.pos(-w/2, h/2, -0.03).tex(1, 0).endVertex();
             t.draw();
         }
         GlStateManager.enableTexture2D();
